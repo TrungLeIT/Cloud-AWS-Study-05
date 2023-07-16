@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
+import { createTodo, deleteTodo, getTodos, patchTodo, searchTodo } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 
@@ -27,13 +27,36 @@ interface TodosState {
   todos: Todo[]
   newTodoName: string
   loadingTodos: boolean
+  searchKey: string
+  todoTotal: number
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     newTodoName: '',
-    loadingTodos: true
+    loadingTodos: true,
+    searchKey: '',
+    todoTotal: 0,
+  }
+
+
+  handleSearch = async () => {
+    this.setState({...this.state, loadingTodos: true})
+    const idToken = this.props.auth.getIdToken()
+    const { searchKey } = this.state        
+    let data: Todo[] = []
+
+    if (searchKey === '') {
+      data = await getTodos(idToken)
+    } else {
+      data = await searchTodo(searchKey, idToken)
+    }
+    this.setState({ todos: data, loadingTodos: false })
+  }
+
+  handleSearchKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ ...this.state, searchKey: e.target.value })    
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,8 +127,23 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   render() {
     return (
       <div>
-        <Header as="h1">TODOs</Header>
-
+        <Grid columns={2}>
+          <Grid.Row>
+            <Grid.Column><Header as="h1">TODOs</Header></Grid.Column>
+            <Grid.Column>
+              <Input 
+                action={{
+                icon: 'search',
+                onClick: this.handleSearch
+                }}
+                fluid 
+                placeholder='Enter your key to search...' 
+                onChange={this.handleSearchKeyChange}
+              />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>      
+        <br /> 
         {this.renderCreateTodoInput()}
 
         {this.renderTodos()}

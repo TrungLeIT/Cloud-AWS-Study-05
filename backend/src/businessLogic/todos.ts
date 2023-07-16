@@ -15,6 +15,11 @@ const logger = createLogger('TodosAccess')
 const attachmentUtils = new AttachmentUtils()
 const todosAccess = new TodosAccess()
 
+// Search Todo
+export async function searchTodo(key: string, userId: string) {
+    return await todosAccess.searchTodo(key, userId)
+}
+
 export async function getUserTodos(jwtToken: string): Promise<TodoItem[]> {
     const userId = parseUserId(jwtToken)
     return todosAccess.getTodos(userId)

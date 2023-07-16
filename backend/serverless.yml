@@ -185,7 +185,24 @@ functions:
           - "xray:PutTelemetryRecords"
         Resource:
           - "*"
-
+  # TODO: Configure Search function
+  SearchTodos:
+    handler: src/lambda/http/searchTodo.handler
+    events:
+      - http:
+          method: get
+          authorizer: Auth
+          path: search
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                key: true      
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
 resources:
   Resources:
